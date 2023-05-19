@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+
+    <!-- Spring initialization of ehCache's mbeans -->
+    <!--  <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="net.sf.ehcache.management.ManagementService.registerMBeans"/>
+        <property name="arguments">
+            <list>
+                <ref bean="cacheManager"/>
+                <ref bean="mbeanServer"/>
+                <value>true</value>
+                <value>true</value>
+                <value>true</value>
+                <value>true</value>
+            </list>
+        </property>
+    </bean>
+
+    
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+        <property name="shared" value="true"/>
+    </bean> -->
+
+
+<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <!-- indicate to first look for a server -->
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
+        <!-- notice how no 'beans' are explicitly configured here -->
+        <!--  <property name="autodetect" value="true"/> -->
+        <property name="assembler" ref="assembler"/>
+        <property name="server" ref="mbeanServer"/>
+        <property name="beans">
+            <map>
+                <entry key="Hibernate:type=statistics">
+                    <ref bean="hibernateStatisticsMBean"/>
+                </entry>
+            </map>
+        </property>
+
+    </bean>
+
+    <bean id="attributeSource"
+          class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
+
+    <bean id="assembler" class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+        <property name="attributeSource" ref="attributeSource"/>
+    </bean>
+    
+      <context:mbean-export server="mbeanServer"/>
+
+    <!-- Spring bean for Hibernate Statistics -->
+    <bean id="hibernateStatisticsMBean" class="com.playground.service.HibernateStatisticsMBean">
+        
+    </bean>
+    
+</beans>
